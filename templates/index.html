@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy"><span class="eyebrow"><span class="pulse"></span> CONNECTING PEOPLE TO LOCAL PHARMACIES</span>
+    <h1>Find your medicine.<br><em>Check availability.</em></h1>
+    <p>Search participating pharmacies and see their latest reported stock status before you visit.</p>
+    <form class="search-form" action="{{ url_for('index') }}" method="get"><span class="search-icon">⌕</span><input id="medicine-search" type="search" name="q" value="{{ q }}" placeholder="Search medicine, brand or strength…" aria-label="Search medicine"><button type="submit">Search <span>→</span></button></form>
+    <div class="search-hint"><span>⌕</span> Try “Paracetamol”, “Cetirizine” or “ORS”</div>
+  </div>
+  <div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="cross-card">＋</div><div class="pill pill-one"></div><div class="pill pill-two"></div><div class="mini-card"><span class="mini-dot"></span><span><b>Stock updates</b><small>Reported by pharmacies</small></span><span class="mini-check">✓</span></div><div class="art-caption">Care starts with clarity.</div></div>
+</section>
+<section class="results-section" id="results">
+  <div class="section-heading"><div><span class="eyebrow">PHARMACY NETWORK</span><h2>{% if q %}Search results{% else %}Explore medicines{% endif %}</h2><p>{% if q %}Matches for <strong>“{{ q }}”</strong>{% else %}Sample listings from participating pharmacies.{% endif %}</p></div><span class="result-count">{{ results|length }} listing{% if results|length != 1 %}s{% endif %}</span></div>
+  {% if results %}<div class="medicine-grid">{% for item in results %}<article class="medicine-card">
+    <div class="medicine-top"><div class="medicine-icon">✚</div><span class="type-pill">{{ item.medicine.form or 'Medicine' }}</span></div>
+    <h3>{{ item.medicine.name }}</h3><p class="medicine-sub">{{ item.medicine.strength }}{% if item.medicine.brand %} · {{ item.medicine.brand }}{% endif %}</p>
+    <p class="medicine-desc">{{ item.medicine.description }}</p>
+    <div class="card-divider"></div><div class="pharmacy-heading"><span>PHARMACY AVAILABILITY</span><b>{{ item.pharmacies|selectattr('quantity','gt',0)|list|length }} reporting in stock</b></div>
+    <div class="pharmacy-list">{% for p in item.pharmacies %}<div class="pharmacy-row"><div class="pharmacy-avatar">{{ p.pharmacy_name[0] }}</div><div class="pharmacy-info"><b>{{ p.pharmacy_name }}</b><small>{{ p.address }}</small><small class="updated">Updated {{ p.updated_at|replace('T',' ')|replace('+00:00',' UTC') }}</small></div><span class="stock-badge {% if p.quantity > 0 %}available{% else %}unavailable{% endif %}"><i></i>{% if p.quantity > 0 %}In stock · {{ p.quantity }}{% else %}Out of stock{% endif %}</span></div>{% endfor %}</div>
+    {% if item.alternatives %}<div class="alternative-box"><span class="alt-icon">↗</span><div><b>Items flagged for review</b><p>{% for alt in item.alternatives %}{{ alt.name }} {{ alt.strength }}{% if not loop.last %}; {% endif %}{% endfor %}</p><small>Not a substitution recommendation. Ask a pharmacist to review suitability.</small></div></div>{% endif %}
+  </article>{% endfor %}</div>{% else %}<div class="empty-state"><div class="empty-icon">⌕</div><h3>No matching medicines found</h3><p>Check the spelling or search by brand, medicine name or strength.</p><a class="button-link" href="{{ url_for('index') }}">View all sample medicines</a></div>{% endif %}
+</section>
+<section class="notice"><span class="notice-icon">i</span><div><b>Important health and stock information</b><p>Stock levels are pharmacy-reported and may change. Call the pharmacy to confirm availability. Do not change a prescribed medicine or strength without advice from a qualified healthcare professional.</p></div></section>
+{% endblock %}
